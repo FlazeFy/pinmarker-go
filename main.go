@@ -1,13 +1,36 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"log"
+	"os"
+	"pinmarker/configs"
+	"pinmarker/routes"
+
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+)
 
 func main() {
+	// Load Env
+	err := godotenv.Load()
+	if err != nil {
+		panic("error loading ENV")
+	}
+
+	// Init Firebase
+	configs.InitFirebaseApp()
+
+	// Init Gin
 	router := gin.Default()
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	router.Run() // listen and serve on 0.0.0.0:8080
+
+	// Setup Dependencies
+	routes.SetUpDependency(router)
+
+	// Run
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Printf("Pinmarker is running on port %s\n", port)
+	router.Run(":" + port)
 }
