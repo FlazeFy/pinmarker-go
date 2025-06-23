@@ -138,6 +138,17 @@ func (r *trackRepository) DeleteByID(appsSource string, createdBy uuid.UUID, tra
 	docName := fmt.Sprintf("%s/%s/user_%s/%s", configs.TrackDoc, appsSource, createdBy.String(), trackID.String())
 	ref := r.firebaseClient.NewRef(docName)
 
+	// Check Existence
+	var existing map[string]interface{}
+	err := ref.Get(r.firebaseCtx, &existing)
+	if err != nil {
+		return fmt.Errorf("failed to read before delete: %w", err)
+	}
+
+	if existing == nil {
+		return fmt.Errorf("Track not found")
+	}
+
 	// Query
 	if err := ref.Delete(r.firebaseCtx); err != nil {
 		return fmt.Errorf("failed to delete from Firebase: %w", err)
