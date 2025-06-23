@@ -65,7 +65,7 @@ func (tr *TrackController) Create(c *gin.Context) {
 	}
 
 	// Service : Create Track
-	err := tr.TrackService.Create(&req)
+	err := tr.TrackService.CreateTrack(&req)
 	if err != nil {
 		utils.MessageResponseErrorBuild(c, http.StatusBadRequest, err.Error())
 		return
@@ -80,13 +80,14 @@ func (tr *TrackController) GetAllTrack(c *gin.Context) {
 	appsSource := c.Param("app_source")
 	createdByRaw := c.Param("created_by")
 
+	// Convert to UUID
 	createdBy, err := uuid.Parse(createdByRaw)
 	if err != nil {
 		utils.MessageResponseErrorBuild(c, http.StatusBadRequest, "created by is not valid")
 		return
 	}
 
-	// Validator : Track Type
+	// Validator : App Source
 	if !utils.ValidatorContains(configs.AppsSources, appsSource) {
 		utils.MessageResponseErrorBuild(c, http.StatusBadRequest, "app source is not valid")
 		return
@@ -110,4 +111,38 @@ func (tr *TrackController) GetAllTrack(c *gin.Context) {
 		"total_pages": totalPages,
 	}
 	utils.MessageResponseBuild(c, "success", "track", "get", http.StatusOK, track, metadata)
+}
+
+func (tr *TrackController) DeleteTrackById(c *gin.Context) {
+	// Param
+	appsSource := c.Param("app_source")
+	createdByRaw := c.Param("created_by")
+	trackIdRaw := c.Param("track_id")
+
+	// Convert to UUID
+	createdBy, err := uuid.Parse(createdByRaw)
+	if err != nil {
+		utils.MessageResponseErrorBuild(c, http.StatusBadRequest, "created by is not valid")
+		return
+	}
+	trackID, err := uuid.Parse(trackIdRaw)
+	if err != nil {
+		utils.MessageResponseErrorBuild(c, http.StatusBadRequest, "track id is not valid")
+		return
+	}
+
+	// Validator : App Source
+	if !utils.ValidatorContains(configs.AppsSources, appsSource) {
+		utils.MessageResponseErrorBuild(c, http.StatusBadRequest, "app source is not valid")
+		return
+	}
+
+	// Service : Get All Track
+	err = tr.TrackService.DeleteTrackByID(appsSource, createdBy, trackID)
+	if err != nil {
+		utils.MessageResponseErrorBuild(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.MessageResponseBuild(c, "success", "track", "soft delete", http.StatusOK, nil, nil)
 }
