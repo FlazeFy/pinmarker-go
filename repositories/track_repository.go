@@ -16,6 +16,7 @@ import (
 // Track Interface
 type TrackRepository interface {
 	Create(track *entities.Track) error
+	CreateBatch(tracks []*entities.Track) error
 	FindAll(pagination utils.Pagination, appsSource string, createdBy uuid.UUID) ([]*entities.Track, int, error)
 	DeleteByID(appsSource string, createdBy uuid.UUID, trackID uuid.UUID) error
 }
@@ -57,6 +58,34 @@ func (r *trackRepository) Create(track *entities.Track) error {
 	ref := r.firebaseClient.NewRef(docName).Child(track.ID.String())
 	if err := ref.Set(r.firebaseCtx, data); err != nil {
 		return fmt.Errorf("failed to save to Firebase: %w", err)
+	}
+
+	return nil
+}
+
+func (r *trackRepository) CreateBatch(tracks []*entities.Track) error {
+	// Prepare multi-path data
+	updates := make(map[string]interface{})
+
+	for _, track := range tracks {
+		// Default Field
+		track.ID = uuid.New()
+
+		// Converter : Struct To Map
+		data, err := utils.ConverterStructToMap(track)
+		if err != nil {
+			continue
+		}
+
+		// Doc Name
+		path := fmt.Sprintf("%s/%s/user_%s/%s", configs.TrackDoc, track.AppsSource, track.CreatedBy.String(), track.ID.String())
+		updates[path] = data
+	}
+
+	// Query
+	ref := r.firebaseClient.NewRef("/")
+	if err := ref.Update(r.firebaseCtx, updates); err != nil {
+		return fmt.Errorf("failed to batch insert to Firebase: %w", err)
 	}
 
 	return nil

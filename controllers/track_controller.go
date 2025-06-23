@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"math"
 	"net/http"
 	"pinmarker/configs"
@@ -20,7 +21,7 @@ func NewTrackController(trackService services.TrackService) *TrackController {
 	return &TrackController{TrackService: trackService}
 }
 
-func (tr *TrackController) Create(c *gin.Context) {
+func (tr *TrackController) CreateTrack(c *gin.Context) {
 	// Model
 	var req entities.Track
 
@@ -54,7 +55,7 @@ func (tr *TrackController) Create(c *gin.Context) {
 		return
 	}
 
-	// Validator : Track Type
+	// Validator : Track Type & Apps Source
 	if !utils.ValidatorContains(configs.TrackTypes, req.TrackType) {
 		utils.MessageResponseErrorBuild(c, http.StatusBadRequest, "track type is not valid")
 		return
@@ -73,6 +74,63 @@ func (tr *TrackController) Create(c *gin.Context) {
 
 	// Response
 	utils.MessageResponseBuild(c, "success", "track", "post", http.StatusCreated, &req, nil)
+}
+
+func (tr *TrackController) CreateTrackMulti(c *gin.Context) {
+	// Validator JSON
+	var req []*entities.Track
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.MessageResponseErrorBuild(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Validate each item
+	for i, track := range req {
+		// Validator Field
+		if track.TrackLat == "" {
+			utils.MessageResponseErrorBuild(c, http.StatusBadRequest, fmt.Sprintf("track latitude is required at index %d", i))
+			return
+		}
+		if track.TrackLong == "" {
+			utils.MessageResponseErrorBuild(c, http.StatusBadRequest, fmt.Sprintf("track longitude is required at index %d", i))
+			return
+		}
+		if track.TrackType == "" {
+			utils.MessageResponseErrorBuild(c, http.StatusBadRequest, fmt.Sprintf("track type is required at index %d", i))
+			return
+		}
+		if track.AppsSource == "" {
+			utils.MessageResponseErrorBuild(c, http.StatusBadRequest, fmt.Sprintf("app source is required at index %d", i))
+			return
+		}
+		if track.CreatedAt.String() == "" {
+			utils.MessageResponseErrorBuild(c, http.StatusBadRequest, fmt.Sprintf("created at is required at index %d", i))
+			return
+		}
+		if track.CreatedBy == uuid.Nil {
+			utils.MessageResponseErrorBuild(c, http.StatusBadRequest, fmt.Sprintf("created by must be a valid UUID at index %d", i))
+			return
+		}
+
+		// Validator : Track Type & Apps Source
+		if !utils.ValidatorContains(configs.TrackTypes, track.TrackType) {
+			utils.MessageResponseErrorBuild(c, http.StatusBadRequest, fmt.Sprintf("track type is not valid at index %d", i))
+			return
+		}
+		if !utils.ValidatorContains(configs.AppsSources, track.AppsSource) {
+			utils.MessageResponseErrorBuild(c, http.StatusBadRequest, fmt.Sprintf("app source is not valid at index %d", i))
+			return
+		}
+	}
+
+	// Service : Create Track Multi
+	if err := tr.TrackService.CreateTrackMulti(req); err != nil {
+		utils.MessageResponseErrorBuild(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Response
+	utils.MessageResponseBuild(c, "success", "track", "post", http.StatusCreated, req, nil)
 }
 
 func (tr *TrackController) GetAllTrack(c *gin.Context) {

@@ -12,6 +12,7 @@ import (
 // Track Interface
 type TrackService interface {
 	CreateTrack(track *entities.Track) error
+	CreateTrackMulti(track []*entities.Track) error
 	GetAllTrack(pagination utils.Pagination, appsSource string, createdBy uuid.UUID) ([]*entities.Track, int, error)
 	DeleteTrackByID(appsSource string, createdBy uuid.UUID, trackID uuid.UUID) error
 }
@@ -31,6 +32,15 @@ func NewTrackService(trackRepo repositories.TrackRepository) TrackService {
 func (s *trackService) CreateTrack(track *entities.Track) error {
 	// Repo : Create Track
 	if err := s.trackRepo.Create(track); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *trackService) CreateTrackMulti(track []*entities.Track) error {
+	// Repo : Create Track
+	if err := s.trackRepo.CreateBatch(track); err != nil {
 		return err
 	}
 
