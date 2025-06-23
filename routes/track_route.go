@@ -10,5 +10,6 @@ func SetUpRouteTrack(api *gin.RouterGroup, trackController *controllers.TrackCon
 	track := api.Group("/tracks")
 	{
 		track.POST("/", trackController.Create)
+		track.GET("/:app_source/:created_by", trackController.GetAllTrack)
 	}
 }
