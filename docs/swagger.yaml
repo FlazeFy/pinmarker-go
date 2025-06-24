@@ -1,0 +1,255 @@
+basePath: /api/v1
+definitions:
+  entities.RequestCreateTrack:
+    properties:
+      app_source:
+        example: pinmarker
+        type: string
+      battery_indicator:
+        example: 85
+        type: integer
+      created_by:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      track_lat:
+        example: "-6.200000"
+        type: string
+      track_long:
+        example: "106.816666"
+        type: string
+      track_type:
+        example: live
+        type: string
+    type: object
+  entities.ResponseBadRequest:
+    properties:
+      message:
+        example: app_source is not valid
+        type: string
+      status:
+        example: failed
+        type: string
+    type: object
+  entities.ResponseCreateTrack:
+    properties:
+      data:
+        $ref: '#/definitions/entities.Track'
+      message:
+        example: Track created
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  entities.ResponseCreateTrackMulti:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/entities.Track'
+        type: array
+      message:
+        example: Track created
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  entities.ResponseDeleteTrackById:
+    properties:
+      message:
+        example: Track permanentally deleted
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  entities.ResponseGetAllTrack:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/entities.Track'
+        type: array
+      message:
+        example: Track fetched
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  entities.ResponseNotFound:
+    properties:
+      message:
+        example: track not found
+        type: string
+      status:
+        example: failed
+        type: string
+    type: object
+  entities.Track:
+    properties:
+      app_source:
+        type: string
+      battery_indicator:
+        type: integer
+      created_at:
+        type: string
+      created_by:
+        type: string
+      id:
+        type: string
+      track_lat:
+        type: string
+      track_long:
+        type: string
+      track_type:
+        type: string
+    type: object
+host: localhost:9001
+info:
+  contact: {}
+  description: API for PinMarker Mobile, Web, and Telegram Bot tracking feature
+  title: PinMarker API
+  version: "1.0"
+paths:
+  /api/v1/tracks:
+    post:
+      consumes:
+      - application/json
+      description: Create an track
+      parameters:
+      - description: Post Track Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entities.RequestCreateTrack'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.ResponseCreateTrack'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/entities.ResponseBadRequest'
+      summary: Create Track
+      tags:
+      - Track
+  /api/v1/tracks/{app_source}/{created_by}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of track in pagination format
+      parameters:
+      - description: created_by must be UUID
+        in: path
+        name: created_by
+        required: true
+        type: string
+      - description: 'app_source (such as: pinmarker, mi-fik, myride, or kumande)'
+        in: path
+        name: app_source
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ResponseGetAllTrack'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/entities.ResponseNotFound'
+      summary: Get All Track
+      tags:
+      - Track
+  /api/v1/tracks/{app_source}/{created_by}/{track_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete track by given id
+      parameters:
+      - description: created_by must be UUID
+        in: path
+        name: created_by
+        required: true
+        type: string
+      - description: 'app_source (such as: pinmarker, mi-fik, myride, or kumande)'
+        in: path
+        name: app_source
+        required: true
+        type: string
+      - description: track_id must be UUID
+        in: path
+        name: track_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ResponseDeleteTrackById'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/entities.ResponseNotFound'
+      summary: Delete Track By ID
+      tags:
+      - Track
+  /api/v1/tracks/multi:
+    post:
+      consumes:
+      - application/json
+      description: Create multiple track
+      parameters:
+      - description: Post Track Multiple Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          items:
+            properties:
+              app_source:
+                example: pinmarker
+                type: string
+              battery_indicator:
+                example: 85
+                type: integer
+              created_at:
+                example: "2025-06-23T11:30:15.913505+07:00"
+                type: string
+              created_by:
+                example: 123e4567-e89b-12d3-a456-426614174000
+                type: string
+              track_lat:
+                example: "-6.200000"
+                type: string
+              track_long:
+                example: "106.816666"
+                type: string
+              track_type:
+                example: live
+                type: string
+            type: object
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.ResponseCreateTrackMulti'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/entities.ResponseBadRequest'
+      summary: Create Track Multiple
+      tags:
+      - Track
+swagger: "2.0"

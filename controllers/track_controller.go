@@ -21,6 +21,15 @@ func NewTrackController(trackService services.TrackService) *TrackController {
 	return &TrackController{TrackService: trackService}
 }
 
+// @Summary      Create Track
+// @Description  Create an track
+// @Tags         Track
+// @Accept       json
+// @Produce      json
+// @Param        request  body  entities.RequestCreateTrack  true  "Post Track Request Body"
+// @Success      201  {object}  entities.ResponseCreateTrack
+// @Failure      404  {object}  entities.ResponseBadRequest
+// @Router       /api/v1/tracks [post]
 func (tr *TrackController) CreateTrack(c *gin.Context) {
 	// Model
 	var req entities.Track
@@ -76,6 +85,15 @@ func (tr *TrackController) CreateTrack(c *gin.Context) {
 	utils.MessageResponseBuild(c, "success", "track", "post", http.StatusCreated, &req, nil)
 }
 
+// @Summary      Create Track Multiple
+// @Description  Create multiple track
+// @Tags         Track
+// @Accept       json
+// @Produce      json
+// @Param        request  body  entities.RequestCreateTrackMulti  true  "Post Track Multiple Request Body"
+// @Success      201  {object}  entities.ResponseCreateTrackMulti
+// @Failure      404  {object}  entities.ResponseBadRequest
+// @Router       /api/v1/tracks/multi [post]
 func (tr *TrackController) CreateTrackMulti(c *gin.Context) {
 	// Validator JSON
 	var req []*entities.Track
@@ -133,6 +151,16 @@ func (tr *TrackController) CreateTrackMulti(c *gin.Context) {
 	utils.MessageResponseBuild(c, "success", "track", "post", http.StatusCreated, req, nil)
 }
 
+// @Summary      Get All Track
+// @Description  Returns a list of track in pagination format
+// @Tags         Track
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  entities.ResponseGetAllTrack
+// @Failure      404  {object}  entities.ResponseNotFound
+// @Router       /api/v1/tracks/{app_source}/{created_by} [get]
+// @Param        created_by  path  string  true  "created_by must be UUID"
+// @Param        app_source  path  string  true  "app_source (such as: pinmarker, mi-fik, myride, or kumande)"
 func (tr *TrackController) GetAllTrack(c *gin.Context) {
 	// Param
 	appsSource := c.Param("app_source")
@@ -171,6 +199,17 @@ func (tr *TrackController) GetAllTrack(c *gin.Context) {
 	utils.MessageResponseBuild(c, "success", "track", "get", http.StatusOK, track, metadata)
 }
 
+// @Summary      Delete Track By ID
+// @Description  Delete track by given id
+// @Tags         Track
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  entities.ResponseDeleteTrackById
+// @Failure      404  {object}  entities.ResponseNotFound
+// @Router       /api/v1/tracks/{app_source}/{created_by}/{track_id} [delete]
+// @Param        created_by  path  string  true  "created_by must be UUID"
+// @Param        app_source  path  string  true  "app_source (such as: pinmarker, mi-fik, myride, or kumande)"
+// @Param        track_id  path  string  true  "track_id must be UUID"
 func (tr *TrackController) DeleteTrackById(c *gin.Context) {
 	// Param
 	appsSource := c.Param("app_source")
