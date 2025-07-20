@@ -22,5 +22,5 @@ func SetUpDependency(r *gin.Engine) {
 	SetUpRoutes(r, trackController)
 
 	// Task Scheduler
-	SetUpScheduler()
+	SetUpScheduler(trackService)
 }
