@@ -5,6 +5,7 @@ import (
 	"os"
 	"pinmarker/configs"
 	"pinmarker/routes"
+	"time"
 
 	_ "pinmarker/docs"
 
@@ -20,7 +21,23 @@ import (
 // @host        localhost:9001
 // @BasePath    /api/v1
 
+func initLogging() {
+	now := time.Now()
+	logFileName := "logs/pinmarker-" + now.Format("January-2006") + ".log"
+
+	f, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open log file: %v", err)
+	}
+
+	log.SetOutput(f)
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+}
+
 func main() {
+	initLogging()
+	log.Println("Pinmarker API service is starting...")
+
 	// Load Env
 	err := godotenv.Load()
 	if err != nil {

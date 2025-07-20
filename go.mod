@@ -19,6 +19,7 @@ require (
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/swaggo/gin-swagger v1.6.0 // indirect
 	github.com/swaggo/swag v1.8.12 // indirect
+	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	golang.org/x/tools v0.33.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
@@ -58,6 +59,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.26.0 // indirect
+	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -73,6 +75,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
+	github.com/robfig/cron v1.2.0
 	github.com/spiffe/go-spiffe/v2 v2.5.0 // indirect
 	github.com/stretchr/testify v1.10.0
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
