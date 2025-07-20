@@ -7,6 +7,7 @@ import (
 	"pinmarker/entities"
 	"pinmarker/utils"
 	"sort"
+	"strings"
 	"time"
 
 	"firebase.google.com/go/v4/db"
@@ -20,6 +21,7 @@ type TrackRepository interface {
 	FindAll(pagination utils.Pagination, appsSource string, createdBy uuid.UUID) ([]*entities.Track, int, error)
 	DeleteByID(appsSource string, createdBy uuid.UUID, trackID uuid.UUID) error
 	FindAppsUserTotal() ([]*entities.AppCount, error)
+	DeleteAllTracksByDaysCreated(days int) (int64, error)
 }
 
 // Track Struct
@@ -178,4 +180,61 @@ func (r *trackRepository) FindAppsUserTotal() ([]*entities.AppCount, error) {
 	}
 
 	return appCounts, nil
+}
+
+func (r *trackRepository) DeleteAllTracksByDaysCreated(days int) (int64, error) {
+	var deletedCount int64
+
+	// Doc Name
+	rootRef := r.firebaseClient.NewRef(configs.TrackDoc)
+
+	// Fetch All Tracks Data
+	var allApps map[string]map[string]map[string]interface{}
+	err := rootRef.Get(r.firebaseCtx, &allApps)
+	if err != nil {
+		return 0, fmt.Errorf("failed to fetch all tracks: %w", err)
+	}
+
+	// Cutoff Time
+	cutoff := time.Now().AddDate(0, 0, -days)
+
+	// All Apps
+	for appName, users := range allApps {
+		for userKey, tracks := range users {
+			if !strings.HasPrefix(userKey, "user_") {
+				continue
+			}
+
+			for trackID, trackDataRaw := range tracks {
+				trackData, ok := trackDataRaw.(map[string]interface{})
+				if !ok {
+					continue
+				}
+
+				createdAtStr, ok := trackData["created_at"].(string)
+				if !ok {
+					continue
+				}
+
+				createdAt, err := time.Parse(time.RFC3339Nano, createdAtStr)
+				if err != nil {
+					continue
+				}
+
+				if createdAt.Before(cutoff) {
+					path := fmt.Sprintf("%s/%s/%s/%s", configs.TrackDoc, appName, userKey, trackID)
+					ref := r.firebaseClient.NewRef(path)
+
+					// Query
+					if err := ref.Delete(r.firebaseCtx); err != nil {
+						return deletedCount, fmt.Errorf("failed to delete track %s: %w", path, err)
+					}
+
+					deletedCount++
+				}
+			}
+		}
+	}
+
+	return deletedCount, nil
 }

@@ -16,6 +16,7 @@ type TrackService interface {
 	CreateTrackMulti(track []*entities.Track) error
 	GetAllTrack(pagination utils.Pagination, appsSource string, createdBy uuid.UUID) ([]*entities.Track, int, error)
 	DeleteTrackByID(appsSource string, createdBy uuid.UUID, trackID uuid.UUID) error
+	DeleteAllTracksByDaysCreated(days int) (int64, error)
 }
 
 // Track Struct
@@ -57,4 +58,8 @@ func (s *trackService) DeleteTrackByID(appsSource string, createdBy uuid.UUID, t
 
 func (s *trackService) GetAppsUserTotal() ([]*entities.AppCount, error) {
 	return s.trackRepo.FindAppsUserTotal()
+}
+
+func (s *trackService) DeleteAllTracksByDaysCreated(days int) (int64, error) {
+	return s.trackRepo.DeleteAllTracksByDaysCreated(days)
 }
