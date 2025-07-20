@@ -11,6 +11,7 @@ import (
 
 // Track Interface
 type TrackService interface {
+	GetAppsUserTotal() ([]*entities.AppCount, error)
 	CreateTrack(track *entities.Track) error
 	CreateTrackMulti(track []*entities.Track) error
 	GetAllTrack(pagination utils.Pagination, appsSource string, createdBy uuid.UUID) ([]*entities.Track, int, error)
@@ -30,21 +31,11 @@ func NewTrackService(trackRepo repositories.TrackRepository) TrackService {
 }
 
 func (s *trackService) CreateTrack(track *entities.Track) error {
-	// Repo : Create Track
-	if err := s.trackRepo.Create(track); err != nil {
-		return err
-	}
-
-	return nil
+	return s.trackRepo.Create(track)
 }
 
 func (s *trackService) CreateTrackMulti(track []*entities.Track) error {
-	// Repo : Create Track
-	if err := s.trackRepo.CreateBatch(track); err != nil {
-		return err
-	}
-
-	return nil
+	return s.trackRepo.CreateBatch(track)
 }
 
 func (s *trackService) GetAllTrack(pagination utils.Pagination, appsSource string, createdBy uuid.UUID) ([]*entities.Track, int, error) {
@@ -61,10 +52,9 @@ func (s *trackService) GetAllTrack(pagination utils.Pagination, appsSource strin
 }
 
 func (s *trackService) DeleteTrackByID(appsSource string, createdBy uuid.UUID, trackID uuid.UUID) error {
-	// Repo : Delete Track
-	if err := s.trackRepo.DeleteByID(appsSource, createdBy, trackID); err != nil {
-		return err
-	}
+	return s.trackRepo.DeleteByID(appsSource, createdBy, trackID)
+}
 
-	return nil
+func (s *trackService) GetAppsUserTotal() ([]*entities.AppCount, error) {
+	return s.trackRepo.FindAppsUserTotal()
 }

@@ -12,6 +12,7 @@ func SetUpRouteTrack(api *gin.RouterGroup, trackController *controllers.TrackCon
 		track.POST("/", trackController.CreateTrack)
 		track.POST("/multi", trackController.CreateTrackMulti)
 		track.GET("/:app_source/:created_by", trackController.GetAllTrack)
+		track.GET("/summary", trackController.GetAppsUserTotal)
 		track.DELETE("/:app_source/:created_by/:track_id", trackController.DeleteTrackById)
 	}
 }

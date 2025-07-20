@@ -19,6 +19,7 @@ type TrackRepository interface {
 	CreateBatch(tracks []*entities.Track) error
 	FindAll(pagination utils.Pagination, appsSource string, createdBy uuid.UUID) ([]*entities.Track, int, error)
 	DeleteByID(appsSource string, createdBy uuid.UUID, trackID uuid.UUID) error
+	FindAppsUserTotal() ([]*entities.AppCount, error)
 }
 
 // Track Struct
@@ -155,4 +156,26 @@ func (r *trackRepository) DeleteByID(appsSource string, createdBy uuid.UUID, tra
 	}
 
 	return nil
+}
+
+func (r *trackRepository) FindAppsUserTotal() ([]*entities.AppCount, error) {
+	// Doc Name
+	ref := r.firebaseClient.NewRef(configs.TrackDoc)
+
+	// Query
+	var raw map[string]map[string]interface{}
+	if err := ref.Get(r.firebaseCtx, &raw); err != nil {
+		return nil, fmt.Errorf("failed to read apps from Firebase: %w", err)
+	}
+	appCounts := make([]*entities.AppCount, 0)
+
+	// Count each app's track
+	for appName, users := range raw {
+		appCounts = append(appCounts, &entities.AppCount{
+			AppName: appName,
+			Total:   len(users),
+		})
+	}
+
+	return appCounts, nil
 }

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type TrackController struct {
@@ -242,4 +244,27 @@ func (tr *TrackController) DeleteTrackById(c *gin.Context) {
 	}
 
 	utils.MessageResponseBuild(c, "success", "track", "soft delete", http.StatusOK, nil, nil)
+}
+
+// @Summary      Get All Apps Track Summary
+// @Description  Returns a list of track in pagination format
+// @Tags         Track
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  entities.ResponseGetAppCount
+// @Failure      404  {object}  entities.ResponseNotFound
+// @Router       /api/v1/tracks/summary [get]
+func (tr *TrackController) GetAppsUserTotal(c *gin.Context) {
+	// Service : Get Apps User Total
+	track, err := tr.TrackService.GetAppsUserTotal()
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		utils.BuildResponseMessage(c, "failed", "track", "empty", http.StatusNotFound, nil, nil)
+		return
+	}
+	if err != nil {
+		utils.BuildErrorMessage(c, err.Error())
+		return
+	}
+
+	utils.MessageResponseBuild(c, "success", "track", "get", http.StatusOK, track, nil)
 }
